@@ -10,14 +10,14 @@ export const getUsers = async (req, res) => {
     }
 }
 
-export const getUsersById = async (req, res) => {
+export const getUsersByEmail = async (req, res) => {
     try {
         const response = await Users.findOne({
             where: {
-                uuid: req.params.id
+                email: req.body.email
             }
         });
-        res.status(200).json(response)
+        res.status(200).json(response.uuid)
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
@@ -33,10 +33,10 @@ export const createUsers = async (req, res) => {
         }
     })
     // if if there are user return 400
-    if (user) return res.status(400).json({ message: "email yang anda gunakan sudah terdaftar" })
+    if (user) return res.status(404).json({ message: "email yang anda gunakan sudah terdaftar" })
 
     // if the password and confirmasi password not is the same
-    if (password !== confirmasiPassword) return res.status(400).json({ message: "password dan confirmasi password tidak sama" });
+    if (password !== confirmasiPassword) return res.status(401).json({ message: "password dan confirmasi password tidak sama" });
     const hashPassword = await argon2.hash(password);
 
     try {
@@ -65,9 +65,9 @@ export const updateUsers = async (req, res) => {
     // If Users Doesn't Exist
     if (!user) return res.status(404).json({ message: "user tidak di temukan" });
     // If Password Cannot Be Empty
-    if (password === "" || confirmasiPassword === "") return res.status(400).json({ message: "password dan confirmasi password tidak boleh kosong" });
+    if (password === "" || confirmasiPassword === "") return res.status(401).json({ message: "password dan confirmasi password tidak boleh kosong" });
     // if password and confirmasi password are not the same, return status 400
-    if (password !== confirmasiPassword) return res.status(400).json({ message: "password dan confirmasi password tidak sama" });
+    if (password !== confirmasiPassword) return res.status(401).json({ message: "password dan confirmasi password tidak sama" });
 
     // Hashing Password
     const hashPassword = await argon2.hash(password);
