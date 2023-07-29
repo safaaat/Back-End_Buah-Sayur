@@ -1,6 +1,7 @@
 import Users from "../models/UserModel.js";
 import argon2 from "argon2";
 
+
 export const Login = async (req, res) => {
     // Destructuring Request Body
     const { email, password } = req.body;
@@ -11,6 +12,7 @@ export const Login = async (req, res) => {
             email: email
         }
     });
+
     // If Users Doesn't Exist
     if (!user) return res.status(400).json({ message: "email yang anda masukan tidak terdafatar" });
     // Matching UserPassword With RequestPasswordBody Using Argon2
@@ -19,12 +21,14 @@ export const Login = async (req, res) => {
     if (!match) return res.status(400).json({ message: "password yang anda masukan salah" });
 
     req.session.userId = user.uuid;
+
     const userNoPass = await Users.findOne({
-        attributes: ["id", "email", "role"],
+        attributes: ["id", "uuid", "email"],
         where: {
             email: email
         }
     });
+
     res.status(200).json(userNoPass);
 }
 

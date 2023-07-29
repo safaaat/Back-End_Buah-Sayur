@@ -13,10 +13,15 @@ export const getUsers = async (req, res) => {
 export const getUsersByEmail = async (req, res) => {
     try {
         const response = await Users.findOne({
+            attributes: ["uuid"],
             where: {
-                email: req.body.email
+                email: req.params.email
             }
         });
+
+        if (!response) return res.status(404).json({ message: "Users email tidak ditemukan" });
+        if (response.role === "admin") return res.status(404).json({ message: "Users email tidak ditemukan" });
+
         res.status(200).json(response.uuid)
     } catch (error) {
         res.status(500).json({ message: error.message })
@@ -59,7 +64,7 @@ export const updateUsers = async (req, res) => {
         }
     });
     // Destructuring Request Body
-    const { email, password, confirmasiPassword, role } = req.body;
+    const { email, password, confirmasiPassword } = req.body;
 
 
     // If Users Doesn't Exist
@@ -74,9 +79,7 @@ export const updateUsers = async (req, res) => {
     // Update Users
     try {
         await Users.update({
-            email: email,
-            password: hashPassword,
-            role: role
+            password: hashPassword
         }, {
             where: {
                 id: user.id
