@@ -19,8 +19,7 @@ export const getUsersByEmail = async (req, res) => {
             }
         });
 
-        if (!response) return res.status(404).json({ message: "Users email tidak ditemukan" });
-        if (response.role === "admin") return res.status(404).json({ message: "Users email tidak ditemukan" });
+        if (!response || response.role === "admin") return res.status(404).json({ message: "Email tidak ditemukan" });
 
         res.status(200).json(response.uuid)
     } catch (error) {
@@ -29,7 +28,7 @@ export const getUsersByEmail = async (req, res) => {
 }
 
 export const createUsers = async (req, res) => {
-    const { email, password, confirmasiPassword, role } = req.body
+    const { email, password, confirmasiPassword, role, idAddress } = req.body
 
     // fetch data from database based on email
     const user = await Users.findOne({
@@ -37,9 +36,8 @@ export const createUsers = async (req, res) => {
             email: email
         }
     })
-    // if if there are user return 400
+    // if if there are user return 404
     if (user) return res.status(404).json({ message: "email yang anda gunakan sudah terdaftar" })
-
     // if the password and confirmasi password not is the same
     if (password !== confirmasiPassword) return res.status(401).json({ message: "password dan confirmasi password tidak sama" });
     const hashPassword = await argon2.hash(password);
@@ -48,7 +46,8 @@ export const createUsers = async (req, res) => {
         await Users.create({
             email: email,
             password: hashPassword,
-            role: role
+            role: role,
+            idAddress: idAddress
         });
         res.status(201).json({ message: "register success" })
     } catch (error) {
@@ -64,7 +63,7 @@ export const updateUsers = async (req, res) => {
         }
     });
     // Destructuring Request Body
-    const { email, password, confirmasiPassword } = req.body;
+    const { password, confirmasiPassword } = req.body;
 
 
     // If Users Doesn't Exist
@@ -73,6 +72,10 @@ export const updateUsers = async (req, res) => {
     if (password === "" || confirmasiPassword === "") return res.status(401).json({ message: "password dan confirmasi password tidak boleh kosong" });
     // if password and confirmasi password are not the same, return status 400
     if (password !== confirmasiPassword) return res.status(401).json({ message: "password dan confirmasi password tidak sama" });
+    // Matching UserPassword With RequestPasswordBody Using Argon2
+    const match = await argon2.verify(user.password, password);
+    // If Password Is Not Same Return 400
+    if (match) return res.status(400).json({ message: "password tetep sama" });
 
     // Hashing Password
     const hashPassword = await argon2.hash(password);
@@ -80,6 +83,53 @@ export const updateUsers = async (req, res) => {
     try {
         await Users.update({
             password: hashPassword
+        }, {
+            where: {
+                id: user.id
+            }
+        });
+        res.status(200).json({ message: "update user success" })
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+export const updateIdAddress = async (req, res) => {
+    const user = await Users.findOne({
+        where: {
+            uuid: req.params.uuid
+        }
+    })
+    if (!user) return res.status(401).json({ message: "user tidak ditemukan" });
+
+    try {
+        await Users.update({
+            idAddress: req.body.idAddress
+        }, {
+            where: {
+                id: user.id
+            }
+        })
+        res.status(200).json({ message: "update address user success" });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+export const changeEmailUsers = async (req, res) => {
+    const { email } = req.body;
+
+    const user = await Users.findOne({
+        where: {
+            uuid: req.params.uuid
+        }
+    });
+
+    if (!user) return res.status(404).json({ message: "Email tidak ditemukan" });
+
+    try {
+        await Users.update({
+            email: email
         }, {
             where: {
                 id: user.id

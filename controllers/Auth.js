@@ -1,6 +1,21 @@
 import Users from "../models/UserModel.js";
 import argon2 from "argon2";
 
+export const getUsersByUuid = async (req, res) => {
+    try {
+        const response = await Users.findOne({
+            attributes: ["id", "uuid", "email"],
+            where: {
+                uuid: req.params.uuid
+            }
+        });
+
+        if (!response || response.role === "admin") return res.status(404).json({ message: "Email tidak ditemukan" });
+        res.status(200).json(response)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
 
 export const Login = async (req, res) => {
     // Destructuring Request Body
@@ -23,7 +38,7 @@ export const Login = async (req, res) => {
     req.session.userId = user.uuid;
 
     const userNoPass = await Users.findOne({
-        attributes: ["id", "uuid", "email"],
+        attributes: ["uuid", "email", "role", "idAddress"],
         where: {
             email: email
         }
@@ -33,13 +48,13 @@ export const Login = async (req, res) => {
 }
 
 export const Me = async (req, res) => {
-    if (!req.session.userId) {
+    if (!req.params.uuid) {
         return res.status(401).json({ message: "mohon login ke akun anda!" });
     }
     const userNoPass = await Users.findOne({
-        attributes: ["uuid", "email", "role"],
+        attributes: ["uuid", "email", "role", "idAddress"],
         where: {
-            uuid: req.session.userId
+            uuid: req.params.uuid
         }
     });
     if (!userNoPass) return res.status(404).json({ message: "user tidak di temukan" });
