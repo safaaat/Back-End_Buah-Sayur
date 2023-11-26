@@ -2,17 +2,18 @@ import express from "express";
 import {
     getProducts,
     getProductsById,
-    createProducts,
     updateProducts,
-    deleteProducts
+    deleteProducts,
+    uploadProduct
 } from "../controllers/Products.js";
+import { handleCombineImage, handleFileUploadSizeLimit, getImageNamesFromId, uploadFile, checkUploadText, checkUploadFile, checkUploadFileUpdate, handleDataArrayUpdate, loopRemoveImage } from "../middleware/productMiddleware.js";
 
 const router = express.Router();
 
 router.get("/products", getProducts);
 router.get("/products/:id", getProductsById);
-router.post("/products", createProducts);
-router.patch("/products/id", updateProducts);
-router.delete("/products/id", deleteProducts);
+router.post("/upload", uploadFile, checkUploadText, checkUploadFile, handleCombineImage, handleFileUploadSizeLimit, uploadProduct)
+router.patch("/products/:id", uploadFile, handleFileUploadSizeLimit, checkUploadText, checkUploadFileUpdate, handleDataArrayUpdate, loopRemoveImage, updateProducts);
+router.delete("/products", getImageNamesFromId, loopRemoveImage, deleteProducts);
 
 export default router;

@@ -1,46 +1,61 @@
 import { Sequelize } from "sequelize";
 import db from "../config/Database.js";
-import Users from "./UserModel.js";
 
 const { DataTypes } = Sequelize;
 
 const Products = db.define("products", {
-    uuid: {
-        type: DataTypes.STRING,
-        defaultValue: DataTypes.UUIDV,
-        allowNull: false,
-        validate: {
-            notEmpty: true
-        }
-    },
     name: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
             notEmpty: true,
-            len: [3, 100] // min max input
+        }
+    },
+    image: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        validate: {
+            notEmpty: true,
+        }
+    },
+    amount: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
+        validate: {
+            notEmpty: true,
+        }
+    },
+    url: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        validate: {
+            notEmpty: true,
         }
     },
     price: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
         validate: {
             notEmpty: true
         }
     },
-    userId: {
+    category: {
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
-            notEmpty: true
+            notEmpty: true,
+        }
+    },
+    information: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        validate: {
+            notEmpty: true,
+            len: [0, 1000]
         }
     }
 }, {
     freezeTableName: true
 });
-
-// satu users bisa menginput banyak product
-Users.hasMany(Products);
-Products.belongsTo(Users, { foreignKey: "userId" })
 
 export default Products;

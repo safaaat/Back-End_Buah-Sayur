@@ -3,7 +3,9 @@ import argon2 from "argon2";
 
 export const getUsers = async (req, res) => {
     try {
-        const response = await Users.findAll();
+        const response = await Users.findAll({
+            attributes: ["id", "email", "idAddress", "role"]
+        });
         res.status(200).json(response)
     } catch (error) {
         res.status(500).json({ message: error.message })

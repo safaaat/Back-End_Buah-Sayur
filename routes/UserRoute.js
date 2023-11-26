@@ -1,9 +1,10 @@
 import express from "express";
 import {
-    getUsers, getUsersByEmail,
+    getUsersByEmail,
     createUsers, updateUsers,
     deleteUsers, changeEmailUsers,
-    updateIdAddress
+    updateIdAddress,
+    getUsers
 } from "../controllers/Users.js";
 
 
